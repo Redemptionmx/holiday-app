@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   useWindowDimensions,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { Picker } from "@react-native-picker/picker";
 import {
   getRegion,
@@ -15,6 +16,17 @@ import {
   detectRegionFromLatitude,
   Region,
 } from "../storage/settings";
+
+const COLORS = {
+  white: "#FFFFFF",
+  blueLight: "#5AB3FF",
+  blueLight2: "#8FD0FF",
+  orange: "#FF7A00",
+  orange2: "#FF9E42",
+  textDark: "#22303A",
+  textMuted: "#5E6B77",
+  border: "#E5EEF5",
+};
 
 export default function SettingsScreen() {
   const { width, height } = useWindowDimensions();
@@ -39,15 +51,21 @@ export default function SettingsScreen() {
   }
 
   async function detectRegion() {
-    // Example GPS detection (replace with real location logic if needed)
     const lat = 52.1; // Demo latitude
     const detected = detectRegionFromLatitude(lat);
     setRegion(detected);
   }
 
-  const Controls = (
+  const LeftControls = (
     <View style={styles.controls}>
-      <Text style={styles.title}>Instellingen</Text>
+      <LinearGradient
+        colors={[COLORS.blueLight, COLORS.blueLight2]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.headerGradient}
+      >
+        <Text style={styles.title}>Instellingen</Text>
+      </LinearGradient>
 
       <Text style={styles.label}>Kies Regio:</Text>
       <View style={styles.radioGroup}>
@@ -64,10 +82,25 @@ export default function SettingsScreen() {
         ))}
       </View>
 
-      <TouchableOpacity style={styles.gpsButton} onPress={detectRegion}>
-        <Text style={styles.gpsButtonText}>Bepaal regio van GPS</Text>
+      <TouchableOpacity
+        style={styles.gpsButtonWrap}
+        onPress={detectRegion}
+        activeOpacity={0.85}
+      >
+        <LinearGradient
+          colors={[COLORS.orange, COLORS.orange2]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.gpsButton}
+        >
+          <Text style={styles.gpsButtonText}>Bepaal regio van GPS</Text>
+        </LinearGradient>
       </TouchableOpacity>
+    </View>
+  );
 
+  const RightControls = (
+    <View style={styles.controls}>
       <Text style={styles.label}>Schooljaar:</Text>
       <View style={styles.pickerWrapper}>
         <Picker
@@ -79,61 +112,93 @@ export default function SettingsScreen() {
         </Picker>
       </View>
 
-      <TouchableOpacity style={styles.saveButton} onPress={onSave}>
-        <Text style={styles.saveButtonText}>Opslaan</Text>
+      <TouchableOpacity
+        style={styles.saveButtonWrap}
+        onPress={onSave}
+        activeOpacity={0.85}
+      >
+        <LinearGradient
+          colors={[COLORS.blueLight, COLORS.blueLight2]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.saveButton}
+        >
+          <Text style={styles.saveButtonText}>Opslaan</Text>
+        </LinearGradient>
       </TouchableOpacity>
     </View>
   );
 
   return (
-    <View
-      style={[
-        styles.container,
-        isLandscape ? styles.landscape : styles.portrait,
-      ]}
+    <LinearGradient
+      colors={[COLORS.white, COLORS.blueLight2]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      style={styles.pageBg}
     >
-      {Controls}
-    </View>
+      <View
+        style={[
+          styles.container,
+          isLandscape ? styles.landscape : styles.portrait,
+        ]}
+      >
+        {isLandscape ? (
+          <>
+            <View style={styles.left}>{LeftControls}</View>
+            <View style={styles.right}>{RightControls}</View>
+          </>
+        ) : (
+          <>
+            {LeftControls}
+            {RightControls}
+          </>
+        )}
+      </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
+  pageBg: { flex: 1 },
+  container: { flex: 1, backgroundColor: "transparent" },
   portrait: { padding: 16 },
-  landscape: { flexDirection: "row", padding: 16 },
+  landscape: { flexDirection: "row", padding: 16, gap: 24 },
+  left: { width: "50%", paddingRight: 12 },
+  right: { width: "50%", paddingLeft: 12 },
   controls: { flex: 1 },
+
+  headerGradient: {
+    borderRadius: 12,
+    paddingVertical: 14,
+    marginBottom: 20,
+    elevation: 2,
+  },
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 20,
     textAlign: "center",
-    color: "#333",
+    color: COLORS.white,
   },
-  label: { fontSize: 18, marginTop: 16, marginBottom: 8, color: "#333" },
+
+  label: { fontSize: 18, marginTop: 16, marginBottom: 8, color: COLORS.textDark },
   radioGroup: { marginBottom: 12 },
   radioOption: { marginVertical: 4 },
-  radioText: { fontSize: 16, color: "#555" },
-  radioSelected: { fontSize: 16, fontWeight: "bold", color: "#007bff" },
-  gpsButton: {
-    backgroundColor: "#eee",
-    padding: 10,
-    borderRadius: 6,
-    marginBottom: 16,
-    alignItems: "center",
-  },
-  gpsButtonText: { fontSize: 16, color: "#333" },
+  radioText: { fontSize: 16, color: COLORS.textMuted },
+  radioSelected: { fontSize: 16, fontWeight: "bold", color: COLORS.orange },
+
+  gpsButtonWrap: { borderRadius: 10, overflow: "hidden", marginBottom: 16 },
+  gpsButton: { paddingVertical: 12, borderRadius: 10, alignItems: "center" },
+  gpsButtonText: { fontSize: 16, color: COLORS.white, fontWeight: "600" },
+
   pickerWrapper: {
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 6,
+    borderColor: COLORS.border,
+    borderRadius: 10,
     marginBottom: 16,
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.white,
   },
-  saveButton: {
-    backgroundColor: "#007bff",
-    paddingVertical: 12,
-    borderRadius: 6,
-    alignItems: "center",
-  },
-  saveButtonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
+
+  saveButtonWrap: { borderRadius: 10, overflow: "hidden" },
+  saveButton: { paddingVertical: 12, borderRadius: 10, alignItems: "center" },
+  saveButtonText: { color: COLORS.white, fontWeight: "bold", fontSize: 16 },
 });

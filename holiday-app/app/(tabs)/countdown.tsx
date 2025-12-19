@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Image,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { getRegion, getSchoolYear, Region } from "../storage/settings";
 import { fetchHolidays, Holiday } from "../services/holidays";
 
@@ -14,6 +15,16 @@ import { fetchHolidays, Holiday } from "../services/holidays";
 const parseLocalDate = (dateStr: string) => {
   const [year, month, day] = dateStr.split("-").map(Number);
   return new Date(year, month - 1, day);
+};
+
+const COLORS = {
+  white: "#FFFFFF",
+  blueLight: "#5AB3FF",
+  blueLight2: "#8FD0FF",
+  orange: "#FF7A00",
+  orange2: "#FF9E42",
+  textDark: "#22303A",
+  textMuted: "#5E6B77",
 };
 
 export default function CountdownScreen() {
@@ -38,7 +49,6 @@ export default function CountdownScreen() {
         setSchoolYear(finalYear);
 
         const holidays = await fetchHolidays(finalYear, finalRegion);
-        // Find the next upcoming Kerstvakantie
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
@@ -54,7 +64,6 @@ export default function CountdownScreen() {
             (start.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
           );
 
-          // Clamp at 0 to avoid negatives
           if (diff < 0) diff = 0;
           setDaysLeft(diff);
         } else {
@@ -73,19 +82,31 @@ export default function CountdownScreen() {
 
   const Left = (
     <View style={styles.block}>
-      <Text style={styles.title}>Countdown</Text>
+      <LinearGradient
+        colors={[COLORS.blueLight, COLORS.blueLight2]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.headerGradient}
+      >
+        <Text style={styles.title}>Countdown</Text>
+      </LinearGradient>
+
       <Text style={styles.region}>
         Regio: {region.charAt(0).toUpperCase() + region.slice(1)}
       </Text>
+
       {loading ? (
-        <ActivityIndicator
-          size="large"
-          color="#007bff"
-          style={{ marginTop: 20 }}
-        />
+        <ActivityIndicator size="large" color={COLORS.blueLight} style={{ marginTop: 20 }} />
       ) : holiday && daysLeft !== null ? (
         <>
-          <Text style={styles.countdown}>Nog {daysLeft} dagen</Text>
+          <LinearGradient
+            colors={[COLORS.orange, COLORS.orange2]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.countdownBox}
+          >
+            <Text style={styles.countdown}>Nog {daysLeft} dagen</Text>
+          </LinearGradient>
           <Text style={styles.description}>Tot Kerst Vakantie</Text>
           <Image
             source={{
@@ -107,43 +128,64 @@ export default function CountdownScreen() {
   );
 
   return (
-    <View
-      style={[
-        styles.container,
-        isLandscape ? styles.containerLandscape : styles.containerPortrait,
-      ]}
+    <LinearGradient
+      colors={[COLORS.white, COLORS.blueLight2]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      style={styles.pageBg}
     >
-      {isLandscape ? (
-        <>
-          <View style={styles.leftPanel}>{Left}</View>
-          <View style={styles.rightPanel}>{Right}</View>
-        </>
-      ) : (
-        <>
-          {Left}
-          {Right}
-        </>
-      )}
-    </View>
+      <View
+        style={[
+          styles.container,
+          isLandscape ? styles.containerLandscape : styles.containerPortrait,
+        ]}
+      >
+        {isLandscape ? (
+          <>
+            <View style={styles.leftPanel}>{Left}</View>
+            <View style={styles.rightPanel}>{Right}</View>
+          </>
+        ) : (
+          <>
+            {Left}
+            {Right}
+          </>
+        )}
+      </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 16 },
+  pageBg: { flex: 1 },
+  container: { flex: 1, backgroundColor: "transparent", padding: 16 },
   containerPortrait: { flexDirection: "column" },
   containerLandscape: { flexDirection: "row" },
   leftPanel: { width: "50%", paddingRight: 12 },
   rightPanel: { width: "50%", paddingLeft: 12 },
   block: { alignItems: "center", marginBottom: 24 },
-  title: { fontSize: 24, fontWeight: "bold", marginBottom: 8 },
-  region: { fontSize: 16, color: "#555", marginBottom: 16 },
-  countdown: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#007bff",
-    marginBottom: 8,
+
+  headerGradient: {
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    marginBottom: 16,
+    elevation: 2,
   },
-  description: { fontSize: 18, color: "#333", marginBottom: 12 },
-  helper: { fontSize: 16, color: "#777" },
+  title: { fontSize: 24, fontWeight: "bold", textAlign: "center", color: COLORS.white },
+
+  region: { fontSize: 16, color: COLORS.textMuted, marginBottom: 16 },
+
+  countdownBox: {
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    marginBottom: 12,
+    elevation: 2,
+  },
+  countdown: { fontSize: 32, fontWeight: "bold", color: COLORS.white, textAlign: "center" },
+
+  description: { fontSize: 18, color: COLORS.textDark, marginBottom: 12 },
+  helper: { fontSize: 16, color: COLORS.textMuted },
   image: { width: 150, height: 150, marginTop: 12, borderRadius: 8 },
 });
