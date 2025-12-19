@@ -5,14 +5,15 @@ import {
   StyleSheet,
   useWindowDimensions,
   ActivityIndicator,
+  Image,
 } from "react-native";
-import { getRegion } from "../storage/settings";
-import { fetchHolidays } from "../services/holidays";
+import { getRegion, getSchoolYear, Region } from "../storage/settings";
+import { fetchHolidays, Holiday } from "../services/holidays";
 
 // Helper: parse YYYY-MM-DD as local date
 const parseLocalDate = (dateStr: string) => {
   const [year, month, day] = dateStr.split("-").map(Number);
-  return new Date(year, month - 1, day); // months are 0-based
+  return new Date(year, month - 1, day);
 };
 
 export default function CountdownScreen() {
@@ -37,18 +38,24 @@ export default function CountdownScreen() {
         setSchoolYear(finalYear);
 
         const holidays = await fetchHolidays(finalYear, finalRegion);
-        const kerst = holidays.find((h) => h.name === "Kerstvakantie");
+        // Find the next upcoming Kerstvakantie
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const kerst = holidays.find(
+          (h) => h.name === "Kerstvakantie" && parseLocalDate(h.startdate) >= today
+        );
 
         if (kerst) {
           setHoliday(kerst);
 
-          const today = new Date();
-          today.setHours(0, 0, 0, 0); // normalize to midnight
           const start = parseLocalDate(kerst.startdate);
-
-          const diff = Math.ceil(
+          let diff = Math.ceil(
             (start.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
           );
+
+          // Clamp at 0 to avoid negatives
+          if (diff < 0) diff = 0;
           setDaysLeft(diff);
         } else {
           setHoliday(null);
@@ -67,13 +74,25 @@ export default function CountdownScreen() {
   const Left = (
     <View style={styles.block}>
       <Text style={styles.title}>Countdown</Text>
-      <Text style={styles.region}>Regio: {region.toUpperCase()}</Text>
+      <Text style={styles.region}>
+        Regio: {region.charAt(0).toUpperCase() + region.slice(1)}
+      </Text>
       {loading ? (
-        <ActivityIndicator size="large" color="#007bff" style={{ marginTop: 20 }} />
+        <ActivityIndicator
+          size="large"
+          color="#007bff"
+          style={{ marginTop: 20 }}
+        />
       ) : holiday && daysLeft !== null ? (
         <>
           <Text style={styles.countdown}>Nog {daysLeft} dagen</Text>
-          <Text style={styles.description}>Tot Kerstvakantie</Text>
+          <Text style={styles.description}>Tot Kerst Vakantie</Text>
+          <Image
+            source={{
+              uri: "https://via.placeholder.com/150?text=Kerst+Afbeelding",
+            }}
+            style={styles.image}
+          />
         </>
       ) : (
         <Text style={styles.description}>Geen Kerstvakantie gevonden</Text>
@@ -124,6 +143,7 @@ const styles = StyleSheet.create({
     color: "#007bff",
     marginBottom: 8,
   },
-  description: { fontSize: 18, color: "#333" },
+  description: { fontSize: 18, color: "#333", marginBottom: 12 },
   helper: { fontSize: 16, color: "#777" },
+  image: { width: 150, height: 150, marginTop: 12, borderRadius: 8 },
 });

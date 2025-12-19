@@ -1,33 +1,57 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Tabs } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: "#007bff",
+        tabBarInactiveTintColor: "#555",
+        tabBarStyle: { backgroundColor: "#fff", borderTopWidth: 1, borderTopColor: "#ddd" },
         headerShown: false,
-        tabBarButton: HapticTab,
-      }}>
+      }}
+    >
+      {/* Overview first */}
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: "Overview",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="list-outline" size={size} color={color} />
+          ),
         }}
       />
+
+      {/* Countdown second */}
       <Tabs.Screen
-        name="explore"
+        name="countdown"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: "Countdown",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="time-outline" size={size} color={color} />
+          ),
+        }}
+      />
+
+      {/* Settings third */}
+      <Tabs.Screen
+        name="settings"
+        options={{
+          title: "Instellingen",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="settings-outline" size={size} color={color} />
+          ),
+        }}
+      />
+
+      {/* About last */}
+      <Tabs.Screen
+        name="about"
+        options={{
+          title: "About",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="information-circle-outline" size={size} color={color} />
+          ),
         }}
       />
     </Tabs>
